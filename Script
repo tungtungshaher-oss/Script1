@@ -315,7 +315,6 @@ local function mutationMult(rec)
                 local t = tostring(x):lower()
                 if t:find("rainbow") then m = m * 3
                 elseif t:find("gold")   then m = m * 2
-                elseif t:find("silver") then m = m * 1.5
                 else m = m * 1.25 end
             end
         end
@@ -368,6 +367,7 @@ local function updateBillboard(key, pos, rec)
         gui.StudsOffset = Vector3.new(0,1.8,0)
         gui.AlwaysOnTop = true
         gui.LightInfluence = 0
+        gui.Enabled = false
         gui.Parent = part
 
         local frame = Instance.new("Frame", gui)
@@ -420,7 +420,7 @@ local function updateBillboard(key, pos, rec)
         ESP.billboards[key] = bb
     else
         bb.part.CFrame = CFrame.new(pos)
-        bb.gui.Enabled = true
+        if ESP.enabled then bb.gui.Enabled = true end
     end
 
     local cat = recCat(rec)
@@ -1280,6 +1280,8 @@ TabESP:Slider({
     Default = 0,
     Callback = function(v) ESP.minMoney = v end
 })
+
+ESP.minMoney = 0
 
 local TabUtil = Window:Tab({
     Title = "Utility",
