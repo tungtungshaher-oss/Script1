@@ -84,7 +84,6 @@ getgenv().Tungtung_ESP = false
 local ESP = {
     enabled = false,
     showPetIcons = true,
-    minMoney = 0,
     billboards = {},
     espContainer = nil
 }
@@ -463,10 +462,8 @@ Run.RenderStepped:Connect(function()
 
     for _, egg in ipairs(snap.Records) do
         if egg.State == "Slot" and egg.BoundsCFrame then
-            if eggMoney(egg) >= ESP.minMoney then
-                activeKeys[egg.Uid] = true
-                updateBillboard(egg.Uid, egg.BoundsCFrame.Position, egg)
-            end
+            activeKeys[egg.Uid] = true
+            updateBillboard(egg.Uid, egg.BoundsCFrame.Position, egg)
         end
     end
 
@@ -542,18 +539,13 @@ local function scanEggs()
     end
     table.sort(out,function(a,b)
         if a.Rar~=b.Rar then return a.Rar>b.Rar end
-        if a.Money~=b.Money then return a.Money>b.Money end
         return a.Dist<b.Dist
     end)
     if OnlyBestEgg and #out>0 then
         local maxRar=out[1].Rar
-        local maxMoney=out[1].Money
-        for _,e in ipairs(out) do
-            if e.Rar==maxRar and e.Money>maxMoney then maxMoney=e.Money end
-        end
         local best={}
         for _,e in ipairs(out) do
-            if e.Rar==maxRar and e.Money==maxMoney then table.insert(best,e) end
+            if e.Rar==maxRar then table.insert(best,e) end
         end
         return best
     end
@@ -718,9 +710,8 @@ task.spawn(function()
             if #eggs > 0 and eggs[1].Uid ~= CarryUid then
                 local myRec = findRecordByUid(CarryUid)
                 local myRar = myRec and type(myRec)=="table" and getRarity(myRec.AssetCategory) or LastHeldRarity
-                local myMoney = myRec and type(myRec)=="table" and eggMoney(myRec) or 0
                 if myRar and myRar >= 0 then
-                    if eggs[1].Rar > myRar or (eggs[1].Rar == myRar and eggs[1].Money > myMoney) then
+                    if eggs[1].Rar > myRar then
                         if EggState and type(EggState.DropFieldEgg)=="function" then
                             pcall(EggState.DropFieldEgg,"PlayerRequest")
                         end
@@ -1199,7 +1190,7 @@ TabSteal:Toggle({
 
 TabSteal:Toggle({
     Title = "Only Best Egg",
-    Desc = "Chỉ lấy trứng rarity cao + tiền cao nhất",
+    Desc = "Chỉ lấy trứng rarity cao nhất",
     Default = false,
     Callback = function(v) OnlyBestEgg=v end
 })
@@ -1271,17 +1262,6 @@ TabESP:Toggle({
     Default = true,
     Callback = function(v) ESP.showPetIcons = v end
 })
-
-TabESP:Slider({
-    Title = "Min Money",
-    Desc = "Ngưỡng tiền tối thiểu để hiện ESP",
-    Min = 0,
-    Max = 100000000,
-    Default = 0,
-    Callback = function(v) ESP.minMoney = v end
-})
-
-ESP.minMoney = 0
 
 local TabUtil = Window:Tab({
     Title = "Utility",
